@@ -1,0 +1,161 @@
+# File path: .github/workflows/deploy.yml
+name: Deploy React App to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Check public directory
+        run: |
+          echo "Checking public directory contents..."
+          ls -la public || echo "Public directory does not exist"
+          
+          if [ ! -f "public/index.html" ]; then
+            echo "Creating public directory and index.html..."
+            mkdir -p public
+            cat > public/index.html << 'EOL'
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="./favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Resume Matcher for Job Requirements" />
+    <title>Resume Matcher</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
+EOL
+          fi
+          
+          if [ ! -f "public/manifest.json" ]; then
+            echo "Creating manifest.json..."
+            cat > public/manifest.json << 'EOL'
+{
+  "short_name": "Resume Matcher",
+  "name": "Resume Matcher for Job Requirements",
+  "icons": [],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
+EOL
+          fi
+          
+          echo "Creating .nojekyll file to disable Jekyll processing..."
+          touch public/.nojekyll
+      
+      - name: Check source directory
+        run: |
+          echo "Checking src directory contents..."
+          ls -la src || echo "Src directory does not exist"
+          
+          if [ ! -f "src/index.js" ]; then
+            echo "Creating basic index.js..."
+            mkdir -p src
+            cat > src/index.js << 'EOL'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+EOL
+          fi
+          
+          if [ ! -f "src/App.js" ]; then
+            echo "Creating basic App.js..."
+            cat > src/App.js << 'EOL'
+import React from 'react';
+
+function App() {
+  return (
+    <div style={{padding: '20px', textAlign: 'center', fontFamily: 'Arial, sans-serif'}}>
+      <h1>Resume Matcher App</h1>
+      <p>This is a basic test page to verify deployment.</p>
+      <p>If you're seeing this, your React app is successfully deployed!</p>
+    </div>
+  );
+}
+
+export default App;
+EOL
+          fi
+      
+      - name: Build the app
+        run: |
+          echo "Creating or updating package.json homepage..."
+          if grep -q '"homepage"' package.json; then
+            sed -i 's#"homepage": "[^"]*"#"homepage": "https://neha2801-create.github.io/QA/"#' package.json
+          else
+            sed -i '/"name"/a \  "homepage": "https://neha2801-create.github.io/QA/",' package.json
+          fi
+          
+          echo "Package.json contents:"
+          cat package.json
+          
+          echo "Building the application..."
+          npm run build
+        env:
+          CI: false
+      
+      - name: Check build output
+        run: |
+          echo "Checking build directory contents..."
+          ls -la build
+          
+          if [ -f "build/index.html" ]; then
+            echo "Build successful! index.html exists."
+            echo "First 50 lines of index.html:"
+            head -n 50 build/index.html
+          else
+            echo "Build failed or did not produce index.html!"
+            exit 1
+          fi
+      
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: build
+          branch: gh-pages
+          clean: true
+          
+      - name: Post-deployment verification
+        run: |
+          echo "Deployment completed. Your site should be available at:"
+          echo "https://neha2801-create.github.io/QA/"
+          echo ""
+          echo "If your site is empty, check these common issues:"
+          echo "1. Ensure your App.js is actually rendering content"
+          echo "2. Check browser console for JavaScript errors"
+          echo "3. Verify asset paths are relative (start with ./ not /)"
+          echo "4. Allow a few minutes for GitHub Pages to update"
