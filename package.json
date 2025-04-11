@@ -2,7 +2,7 @@
   "name": "resume-matcher",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://neha2801-create.github.io/resume-matcher",
+  "homepage": "https://github.com/neha2801-create/QA",
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
