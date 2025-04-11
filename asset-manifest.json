@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/neha2801-create/QA/static/css/main.a4388dca.css",
+    "main.js": "/neha2801-create/QA/static/js/main.98b635b8.js",
+    "index.html": "/neha2801-create/QA/index.html",
+    "main.a4388dca.css.map": "/neha2801-create/QA/static/css/main.a4388dca.css.map",
+    "main.98b635b8.js.map": "/neha2801-create/QA/static/js/main.98b635b8.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.a4388dca.css",
+    "static/js/main.98b635b8.js"
+  ]
+}
